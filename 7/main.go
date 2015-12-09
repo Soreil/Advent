@@ -21,9 +21,10 @@ var moves []gate
 const (
 	AND    operator = "AND"
 	OR     operator = "OR"
-	NOT    operator = "OR"
+	NOT    operator = "NOT"
 	LSHIFT operator = "LSHIFT"
 	RSHIFT operator = "RSHIFT"
+	STORE  operator = ""
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 	}
 	m = make(map[string]uint16)
 	lines := strings.Split(string(input[:len(input)-1]), "\n")
+	m["b"] = 16076
 
 	for _, l := range lines {
 		line := strings.Split(l, " ")
@@ -51,8 +53,84 @@ func main() {
 		}
 		moves = append(moves, g)
 	}
-	fmt.Println(moves)
+	for i := 0; i < len(moves); {
+		if move(moves[i]) {
+			m["b"] = 16076 //remove this line to get Solution A instead
+			moves = append(moves[:i], moves[i+1:]...)
+			i = 0
+		} else {
+			i++
+		}
+	}
+
+	for _, v := range moves {
+		if v.op == AND {
+			fmt.Println(v)
+		}
+	}
+	fmt.Println()
+
 	fmt.Println(m)
+	fmt.Println(m["a"])
+}
+
+func move(g gate) bool {
+	switch g.op {
+	case AND:
+		if len(g.r) == 2 {
+			r1, ok := m[g.r[0]]
+			if ok {
+				m[g.r[1]] = r1 & g.n
+				return true
+			}
+		} else {
+			r1, ok := m[g.r[0]]
+			r2, ok2 := m[g.r[1]]
+			if ok && ok2 {
+				m[g.r[2]] = r1 & r2
+				return true
+			}
+		}
+	case OR:
+		r1, ok := m[g.r[0]]
+		r2, ok2 := m[g.r[1]]
+		if ok && ok2 {
+			m[g.r[2]] = r1 | r2
+			return true
+		}
+	case NOT:
+		r1, ok := m[g.r[0]]
+		if ok {
+			m[g.r[1]] = ^r1
+			return true
+		}
+	case LSHIFT:
+		r1, ok := m[g.r[0]]
+		if ok {
+			m[g.r[1]] = r1 << g.n
+			return true
+		}
+	case RSHIFT:
+		r1, ok := m[g.r[0]]
+		if ok {
+			m[g.r[1]] = r1 >> g.n
+			return true
+		}
+	case STORE:
+		if len(g.r) == 1 {
+			m[g.r[0]] = g.n
+			return true
+		} else {
+			r1, ok := m[g.r[0]]
+			if ok {
+				m[g.r[1]] = r1
+				return true
+			}
+		}
+	default:
+		return false
+	}
+	return false
 }
 
 func isLower(s string) bool {
