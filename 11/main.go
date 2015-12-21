@@ -5,15 +5,13 @@ import (
 	"strings"
 )
 
-var input = "hepxcrrq"
+var input = "hepxxzaa"
 
 func main() {
 	for s := input; len(s) == 8 && s != "zzzzzzzz"; s = inc(s) {
 		if !strings.ContainsAny(s, "iol") && hasDoubleDouble(s) && hasStraight(s) {
 			fmt.Println("Solution found", s)
 			break
-		} else {
-			fmt.Println(s)
 		}
 	}
 }
@@ -21,12 +19,12 @@ func main() {
 func hasDoubleDouble(s string) bool {
 	for c := "a"; c <= "z"; c = inc(c) {
 		if n := strings.Index(s, c+c); n >= 0 {
-			s = s[n:]
-			for c := "a"; c <= "z"; c = inc(c) {
+			for c = inc(c); c <= "z"; c = inc(c) {
 				if n := strings.Index(s, c+c); n >= 0 {
 					return true
 				}
 			}
+			return false
 		}
 	}
 	return false
@@ -42,13 +40,13 @@ func hasStraight(s string) bool {
 }
 
 func inc(s string) string {
-	for i := range s {
-		if s[len(s)-i-1] != 'z' {
-			var tmp string
-			tmp = s[:len(s)-i-1] + string(s[len(s)-i-1]+1) + s[len(s)-i:]
-			s = tmp
-			break
+	if s[len(s)-1] == 'z' {
+		if len(s) != 1 {
+			return inc(s[:len(s)-1]) + "a"
+		} else {
+			return "az"
 		}
+	} else {
+		return s[:len(s)-1] + string(s[len(s)-1]+1)
 	}
-	return s
 }
